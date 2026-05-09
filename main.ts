@@ -75,10 +75,17 @@ function sanitizeHeaders(h: unknown): Record<string, string> {
   if (!h || typeof h !== "object") return out;
   for (const [k, v] of Object.entries(h as Record<string, unknown>)) {
     if (!k) continue;
-    if (STRIP_HEADERS.has(k.toLowerCase())) continue;
+
+    const lower = k.toLowerCase();
+
+    if (STRIP_HEADERS.has(lower)) continue;
+
+    // Prevent compressed upstream responses that break relay decoding
+    if (lower === "accept-encoding") continue;
+
     out[k] = String(v ?? "");
   }
-  return out;
+    return out;
 }
 
 async function handler(req: Request): Promise<Response> {
